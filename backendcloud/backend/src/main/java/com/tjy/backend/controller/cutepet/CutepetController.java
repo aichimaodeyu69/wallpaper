@@ -3,18 +3,26 @@ package com.tjy.backend.controller.cutepet;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.tjy.backend.mapper.CutepetMapper;
 import com.tjy.backend.pojo.Cutepet;
 import com.tjy.backend.utils.GetRequestExample;
+import com.tjy.backend.utils.ImageUtils;
+import com.tjy.backend.utils.NetworkImageToMultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 public class CutepetController {
     @Autowired
     CutepetMapper cutepetMapper;
@@ -42,17 +50,40 @@ public class CutepetController {
             System.out.println("第"+m + "次");
 
         }
+        return "OK";
+    }
+
+    @RequestMapping("/cutepet/all/")
+    public List<Cutepet> getAllCutepet(String type,String size) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("type",type);
+        queryWrapper.orderByAsc("RAND()");
+        queryWrapper.last("LIMIT "+size);
 
 
+        return cutepetMapper.selectList(queryWrapper);
+    }
+    @Autowired
+    private ImageUtils imageUtils;
 
-
-
-
-
-
-
-
-
-        return "jj";
+    @RequestMapping("/cutepet/changeimageurl/")
+    public String ChangeImageUrl() throws Exception {
+        List<Cutepet> cutepets = cutepetMapper.selectList(null);
+        for(Cutepet cutepet : cutepets){
+            String type = cutepet.getType();
+            String remote_url = cutepet.getUrl();
+            if(remote_url.contains("sealks")){
+                continue;
+            }
+            String dataPath = "wallpaper/"+type;
+            String imageUrl = imageUtils.uploadImageQiniuByRemoteUrl(remote_url,dataPath);
+            System.out.println(imageUrl);
+            cutepet.setUrl(imageUrl);
+            UpdateWrapper updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("id",cutepet.getId());
+            updateWrapper.set("url",imageUrl);
+            cutepetMapper.update(null,updateWrapper);
+        }
+        return "OK";
     }
 }

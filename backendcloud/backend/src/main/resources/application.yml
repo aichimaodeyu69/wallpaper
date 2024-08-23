@@ -1,0 +1,14 @@
+spring:
+  freemarker:
+    suffix: .html
+    cache: false
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+qiniu:
+  accessKey: "fG-MZJK8smkrwNTiVQ8m-SYfeCK_ceANNa7F9J-Z"
+  accessSecretKey: "Com1Af-Nd4j1QvJUrM3Rth5yk-N6YFyrd-SUZTAN"
+  bucket: "sealks"
+  imageUrl: "cdn.sealks.cn"
